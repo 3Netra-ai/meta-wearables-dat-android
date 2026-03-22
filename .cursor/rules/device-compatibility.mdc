@@ -1,0 +1,127 @@
+---
+description: Device compatibility, Gen 1 (Ray-Ban Meta) vs Gen 2 (Meta Ray-Ban Display) differences, DeviceType filtering, and AutoDeviceSelector configuration
+alwaysApply: false
+---
+
+# Device Compatibility (Android)
+
+Guide for handling Gen 1 (Ray-Ban Meta) and Gen 2 (Meta Ray-Ban Display) glasses in the DAT SDK.
+
+## Supported devices
+
+| Device | Generation | Available since | Key feature |
+|--------|-----------|-----------------|-------------|
+| Ray-Ban Meta | Gen 1 | SDK v0.1.0 | Camera, audio, open-ear speakers |
+| Meta Ray-Ban Display | Gen 2 | SDK v0.4.0 | Camera, audio, built-in display |
+
+Both generations support the same streaming API — `StreamSession`, `VideoFrame`, and `capturePhoto()` work identically for Gen 1 and Gen 2.
+
+## Checking device compatibility
+
+Before streaming, check that the connected device is compatible with your SDK version:
+
+```kotlin
+lifecycleScope.launch {
+    Wearables.devicesMetadata[deviceId]?.collect { metadata ->
+        when (metadata.compatibility) {
+            DeviceCompatibility.COMPATIBLE -> {
+                // Device is ready to use
+            }
+            DeviceCompatibility.DEVICE_UPDATE_REQUIRED -> {
+                // Glasses firmware is too old — prompt user to update
+                val name = metadata.name.ifEmpty { deviceId.toString() }
+                showError("$name requires a firmware update")
+            }
+        }
+    }
+}
+```
+
+## Discovering devices
+
+```kotlin
+lifecycleScope.launch {
+    Wearables.devices.collect { deviceIdentifiers ->
+        // deviceIdentifiers contains all paired/connected devices (Gen 1 and Gen 2)
+    }
+}
+```
+
+## Selecting a device
+
+### Auto-select (recommended)
+
+`AutoDeviceSelector` picks the best available device automatically and filters out
+incompatible devices by default:
+
+```kotlin
+val selector = AutoDeviceSelector()
+```
+
+To include all devices regardless of compatibility:
+
+```kotlin
+val selector = AutoDeviceSelector(filter = { true })
+```
+
+To prefer Gen 2 over Gen 1, supply a custom ranking function:
+
+```kotlin
+val selector = AutoDeviceSelector(
+    rank = { deviceId ->
+        val metadata = Wearables.devicesMetadata[deviceId]?.value
+        when (metadata?.deviceType) {
+            DeviceType.META_RAYBAN_DISPLAY -> 0   // Gen 2 first
+            DeviceType.RAYBAN_META         -> 1   // Gen 1 second
+            else                           -> 2
+        }
+    }
+)
+```
+
+### Target a specific device
+
+```kotlin
+val selector = SpecificDeviceSelector(deviceIdentifier = knownDeviceId)
+```
+
+## Reading device metadata
+
+```kotlin
+val metadata = Wearables.devicesMetadata[deviceId]?.value
+
+// Device name (e.g., "My Frames")
+val name = metadata?.name
+
+// Firmware version string
+val firmware = metadata?.firmwareVersion
+
+// Compatibility status
+val compat = metadata?.compatibility
+```
+
+## MockDeviceKit: simulating Gen 1
+
+```kotlin
+val mockDeviceKit = MockDeviceKit.getInstance(context)
+mockDeviceKit.enable()
+
+val gen1Device = mockDeviceKit.pairRaybanMeta()   // Simulates Ray-Ban Meta (Gen 1)
+gen1Device.powerOn()
+gen1Device.unfold()
+gen1Device.don()
+```
+
+## Version compatibility table
+
+| SDK | Meta AI App | Ray-Ban Meta (Gen 1) | Meta Ray-Ban Display (Gen 2) |
+|-----|-------------|----------------------|------------------------------|
+| 0.5.0 | See [version dependencies](https://wearables.developer.meta.com/docs/version-dependencies) | See docs | See docs |
+| 0.4.0 | V254 | V20 | V21 |
+| 0.3.0 | V249 | V20 | — (not supported) |
+
+## Links
+
+- [Version dependencies](https://wearables.developer.meta.com/docs/version-dependencies)
+- [Known issues](https://wearables.developer.meta.com/docs/knownissues)
+- [Android API Reference](https://wearables.developer.meta.com/docs/reference/android/dat/0.5)
