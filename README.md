@@ -132,7 +132,7 @@ app's `AndroidManifest.xml` file within the `<application>` element:
 
 ## AI-Assisted Development
 
-This repository includes AI development skills that work with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Cursor](https://cursor.sh/), and other AI coding assistants that support project-level context.
+This repository includes AI development skills that work with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Cursor](https://cursor.sh/), [Android Studio Gemini](https://developer.android.com/studio/preview/gemini), [GitHub Copilot](https://github.com/features/copilot), and other AI coding assistants that support project-level context.
 
 ### Quick setup
 
@@ -142,12 +142,14 @@ Add the skills to your project with a single command:
 curl -sL https://raw.githubusercontent.com/facebook/meta-wearables-dat-android/main/install-skills.sh | bash
 ```
 
-Or manually download the `.claude/` directory into your project root:
+Or install for a specific tool:
 
 ```bash
-cd your-project
-curl -sL https://github.com/facebook/meta-wearables-dat-android/archive/refs/heads/main.tar.gz \
-  | tar xz --strip-components=1 'meta-wearables-dat-android-main/.claude'
+./install-skills.sh claude    # Claude Code       → .claude/
+./install-skills.sh copilot   # GitHub Copilot    → .github/copilot-instructions.md
+./install-skills.sh cursor    # Cursor             → .cursor/rules/
+./install-skills.sh agents    # Universal agents   → AGENTS.md
+./install-skills.sh gemini    # Android Studio     → GEMINI.md
 ```
 
 If you cloned this repository, the skills are already included — no setup needed.
@@ -160,9 +162,11 @@ If you cloned this repository, the skills are already included — no setup need
 - **Session lifecycle** — Device session states, pause/resume, availability
 - **Permissions & registration** — App registration, camera permission flows
 - **Debugging** — Common issues, Developer Mode, version compatibility
+- **Device compatibility** — Gen 1 (Ray-Ban Meta) vs Gen 2 (Meta Ray-Ban Display) differences, `DeviceType` filtering, firmware compatibility
 - **Sample app guide** — Building a complete DAT app
 
 Skills are loaded automatically from `.claude/settings.json` when your AI assistant opens the project.
+`GEMINI.md` is picked up automatically by Android Studio Gemini and Gemini CLI.
 
 ## License
 

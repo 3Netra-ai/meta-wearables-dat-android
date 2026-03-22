@@ -987,6 +987,51 @@ fun tearDownMockDevice(context: Context) {
 }
 ```
 
+## Supported Devices (Gen 1 and Gen 2)
+
+| Device | Generation | SDK Support | Key Capability |
+|--------|-----------|-------------|----------------|
+| Ray-Ban Meta | **Gen 1** | v0.1.0+ | Camera, audio, open-ear speakers |
+| Meta Ray-Ban Display | **Gen 2** | v0.4.0+ | Camera, audio, built-in display |
+
+Both generations share the same streaming API (`StreamSession`, `VideoFrame`, `capturePhoto()`).
+
+### Version compatibility
+
+| SDK | Meta AI App | Ray-Ban Meta (Gen 1) | Meta Ray-Ban Display (Gen 2) |
+|-----|-------------|----------------------|------------------------------|
+| 0.5.0 | See [docs](https://wearables.developer.meta.com/docs/version-dependencies) | See docs | See docs |
+| 0.4.0 | V254 | V20 | V21 |
+| 0.3.0 | V249 | V20 | — (not supported) |
+
+### Checking device compatibility
+
+```kotlin
+lifecycleScope.launch {
+    Wearables.devicesMetadata[deviceId]?.collect { metadata ->
+        if (metadata.compatibility == DeviceCompatibility.DEVICE_UPDATE_REQUIRED) {
+            showError("${metadata.name} requires a firmware update")
+        }
+    }
+}
+```
+
+### Selecting by generation
+
+```kotlin
+// Prefer Gen 2 over Gen 1
+val selector = AutoDeviceSelector(
+    rank = { deviceId ->
+        val metadata = Wearables.devicesMetadata[deviceId]?.value
+        when (metadata?.deviceType) {
+            DeviceType.META_RAYBAN_DISPLAY -> 0   // Gen 2 first
+            DeviceType.RAYBAN_META         -> 1   // Gen 1 second
+            else                           -> 2
+        }
+    }
+)
+```
+
 ## Allowed dependencies
 
 Your DAT app should only depend on:
@@ -999,3 +1044,5 @@ Your DAT app should only depend on:
 - [CameraAccess sample](https://github.com/facebook/meta-wearables-dat-android/tree/main/samples)
 - [Full integration guide](https://wearables.developer.meta.com/docs/build-integration-android)
 - [Developer documentation](https://wearables.developer.meta.com/docs/develop/)
+- [Version dependencies](https://wearables.developer.meta.com/docs/version-dependencies)
+- [Known issues](https://wearables.developer.meta.com/docs/knownissues)

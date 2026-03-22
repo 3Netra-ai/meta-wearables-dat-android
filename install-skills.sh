@@ -8,6 +8,7 @@
 #   ./install-skills.sh copilot      # GitHub Copilot only
 #   ./install-skills.sh cursor       # Cursor only
 #   ./install-skills.sh agents       # AGENTS.md only
+#   ./install-skills.sh gemini       # Gemini / Android Studio only
 #   ./install-skills.sh all          # All tools
 #   curl -sL ...install-skills.sh | bash   # Defaults to "all" (no tty)
 
@@ -78,6 +79,18 @@ install_cursor() {
   fi
 }
 
+install_gemini() {
+  echo "Installing Gemini (Android Studio) config..."
+  download_archive
+  if [ -f "${EXTRACT_DIR}/GEMINI.md" ]; then
+    cp "${EXTRACT_DIR}/GEMINI.md" GEMINI.md
+    echo "Installed GEMINI.md"
+  else
+    echo "Error: Failed to download GEMINI.md." >&2
+    return 1
+  fi
+}
+
 install_agents() {
   echo "Installing AGENTS.md..."
   download_archive
@@ -96,6 +109,7 @@ install_all() {
   install_copilot || failed=1
   install_cursor  || failed=1
   install_agents  || failed=1
+  install_gemini  || failed=1
   if [ "$failed" -eq 1 ]; then
     return 1
   fi
@@ -112,17 +126,19 @@ show_menu() {
   echo "  2) GitHub Copilot (.github/)"
   echo "  3) Cursor         (.cursor/)"
   echo "  4) AGENTS.md      (universal — Codex, Gemini CLI, Devin, Windsurf, etc.)"
-  echo "  5) All tools"
-  echo "  6) Cancel"
+  echo "  5) Gemini         (GEMINI.md — Android Studio Gemini)"
+  echo "  6) All tools"
+  echo "  7) Cancel"
   echo ""
-  read -rp "Enter choice [1-6]: " choice
+  read -rp "Enter choice [1-7]: " choice
   case "$choice" in
     1) install_claude ;;
     2) install_copilot ;;
     3) install_cursor ;;
     4) install_agents ;;
-    5) install_all ;;
-    6) echo "Cancelled." ; exit 0 ;;
+    5) install_gemini ;;
+    6) install_all ;;
+    7) echo "Cancelled." ; exit 0 ;;
     *) echo "Invalid choice." >&2 ; exit 1 ;;
   esac
 }
@@ -136,8 +152,9 @@ if [ -n "$TOOL" ]; then
     copilot) install_copilot ;;
     cursor)  install_cursor ;;
     agents)  install_agents ;;
+    gemini)  install_gemini ;;
     all)     install_all ;;
-    *)       echo "Unknown tool: $TOOL. Use: claude, copilot, cursor, agents, or all." >&2 ; exit 1 ;;
+    *)       echo "Unknown tool: $TOOL. Use: claude, copilot, cursor, agents, gemini, or all." >&2 ; exit 1 ;;
   esac
 elif [ -t 0 ]; then
   show_menu

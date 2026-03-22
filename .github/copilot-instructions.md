@@ -977,3 +977,76 @@ Key behaviors:
 ## Links
 
 - [Session lifecycle documentation](https://wearables.developer.meta.com/docs/lifecycle-events)
+
+
+# Device Compatibility (Android)
+
+Guide for handling Gen 1 (Ray-Ban Meta) and Gen 2 (Meta Ray-Ban Display) glasses in the DAT SDK.
+
+## Supported devices
+
+| Device | Generation | Available since | Key feature |
+|--------|-----------|-----------------|-------------|
+| Ray-Ban Meta | Gen 1 | SDK v0.1.0 | Camera, audio, open-ear speakers |
+| Meta Ray-Ban Display | Gen 2 | SDK v0.4.0 | Camera, audio, built-in display |
+
+Both generations support the same streaming API — `StreamSession`, `VideoFrame`, and `capturePhoto()` work identically for Gen 1 and Gen 2.
+
+## Checking device compatibility
+
+```kotlin
+lifecycleScope.launch {
+    Wearables.devicesMetadata[deviceId]?.collect { metadata ->
+        when (metadata.compatibility) {
+            DeviceCompatibility.COMPATIBLE -> {
+                // Device is ready to use
+            }
+            DeviceCompatibility.DEVICE_UPDATE_REQUIRED -> {
+                val name = metadata.name.ifEmpty { deviceId.toString() }
+                showError("$name requires a firmware update")
+            }
+        }
+    }
+}
+```
+
+## Selecting by generation
+
+```kotlin
+// Prefer Gen 2 over Gen 1
+val selector = AutoDeviceSelector(
+    rank = { deviceId ->
+        val metadata = Wearables.devicesMetadata[deviceId]?.value
+        when (metadata?.deviceType) {
+            DeviceType.META_RAYBAN_DISPLAY -> 0   // Gen 2 first
+            DeviceType.RAYBAN_META         -> 1   // Gen 1 second
+            else                           -> 2
+        }
+    }
+)
+```
+
+## MockDeviceKit: simulating Gen 1
+
+```kotlin
+val mockDeviceKit = MockDeviceKit.getInstance(context)
+mockDeviceKit.enable()
+val device = mockDeviceKit.pairRaybanMeta()   // Ray-Ban Meta (Gen 1)
+device.powerOn()
+device.unfold()
+device.don()
+```
+
+## Version compatibility
+
+| SDK | Meta AI App | Ray-Ban Meta (Gen 1) | Meta Ray-Ban Display (Gen 2) |
+|-----|-------------|----------------------|------------------------------|
+| 0.5.0 | See [version dependencies](https://wearables.developer.meta.com/docs/version-dependencies) | See docs | See docs |
+| 0.4.0 | V254 | V20 | V21 |
+| 0.3.0 | V249 | V20 | — (not supported) |
+
+## Links
+
+- [Version dependencies](https://wearables.developer.meta.com/docs/version-dependencies)
+- [Known issues](https://wearables.developer.meta.com/docs/knownissues)
+- [Android API Reference](https://wearables.developer.meta.com/docs/reference/android/dat/0.5)

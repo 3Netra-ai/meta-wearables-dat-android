@@ -6,6 +6,7 @@
     "skills/session-lifecycle.md": "Device session states, pause/resume, availability monitoring",
     "skills/permissions-registration.md": "App registration with Meta AI, camera permission flows",
     "skills/debugging.md": "Common issues, Developer Mode, version compatibility, state machine diagnosis",
-    "skills/sample-app-guide.md": "Building a complete DAT app with camera streaming and photo capture"
+    "skills/sample-app-guide.md": "Building a complete DAT app with camera streaming and photo capture",
+    "skills/device-compatibility.md": "Gen 1 (Ray-Ban Meta) vs Gen 2 (Meta Ray-Ban Display) differences, DeviceType filtering, AutoDeviceSelector configuration, firmware compatibility"
   }
 }
